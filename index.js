@@ -7,18 +7,6 @@ const experienceSection = ['Experience', 'Досвід', 'Опыт работы'
 const educationSection = ['Education', 'Освіта', 'Образование'];
 const languagesSection = ['Languages', 'Мови', 'Языки']
 
-const experienceBlockDraft = {
-    companyName: null,
-    positions: [
-        // {
-        //     positionName: null,
-        //     period: null,
-        //     duration: null
-        // }
-    ],
-    location: null // can be null;
-}
-
 const linkedInLanguageList = [
     "Arabic",
     "Chinese",
@@ -105,6 +93,7 @@ const timePeriodTranslations = {
     "рік": "year",
     "роки": "years",
     "месяц": "month",
+    "месяца": "month",
     "месяцев": "months",
     "місяць": "month",
     "місяців": "months",
@@ -135,297 +124,50 @@ const timePeriodTranslations = {
 }
 
 function getCompanyDurationTranslated(input) {
-    const array = input.split(" ");
-    return array.map((el) => timePeriodTranslations[el] || el).join(' ');
+    const array = input.split(/(\s+)/);
+    return array.map((el) => timePeriodTranslations[el] || el).join('');
 }
 
 function getPositionDurationTranslated(input) {
+    console.log({hello: input.substring(
+        input.indexOf("(") + 1,
+        input.lastIndexOf(")")
+    )})
+
     const duration = input.substring(
         input.indexOf("(") + 1,
         input.lastIndexOf(")")
     );
-    // console.log({input})
-    // console.log({duration})
     const array = duration.split(" ");
-    // console.log({array})
     return array.map((el) => timePeriodTranslations[el] || el).join(' ');
 }
 
-function findDuration(string) {
-    const duration = string.substring(
-        string.indexOf("(") + 1,
-        string.lastIndexOf(")")
-    );
-    return !!duration
-}
-
-function isPositionDuration(string) {
-    return /([a-z]+)\s*((19|20)\d{2})/.test(string)
-}
-
-function isExperienceDuration(string) {
-    const yearsRegex = /(\d+)\s*(year|го|р)/
-    const monthsRegex = /(\d+)\s*(m|м)/
-
-    return yearsRegex.test(string) || monthsRegex.test(string);
-}
-
-//
-// let text = '';
-// 							let parsingSkills = false;
-// 							let parsingLanguages = false;
-// 							let parsingEducation = false;
-// 							let parsingExperience = false;
-// 							let pageFound = 0;
-// 							let companyInfo = {};
-// 							let currentPosition = null;
-// 							let currentPeriod = null;
-// 							let tempCurrentPeriod = null;
-// 							let multiplePositions = false;
-// 							let countryCheck = false;
-// 							for (let [key, item] of textContent.items.entries()) {
-// 								if (item.str.includes('Page ')) {
-// 									pageFound++;
-// 								}
-// 								if (pageFound) {
-// 									pageFound++;
-// 									if (pageFound >= 5) {
-// 										pageFound = 0;
-// 									}
-// 									continue;
-// 								}
-
-// 								if (item.str.trim().length === 0 || item.str === '\n') {
-// 									continue;
-// 								}
-
-// 								if (experienceSection.includes(item.str) || languagesSection.includes(item.str) || educationSection.includes(item.str) || skillsSection.includes(item.str)) {
-// 									if (languagesSection.includes(item.str)) {
-// 										parsingLanguages = true;
-// 										parsingEducation = false;
-// 										parsingExperience = false;
-// 										parsingSkills = false;
-// 										continue;
-// 									}
-// 									if (skillsSection.includes(item.str)) {
-// 										parsingSkills = true;
-// 										parsingEducation = false;
-// 										parsingExperience = false;
-// 										parsingLanguages = false;
-// 										continue;
-// 									}
-// 									if (educationSection.includes(item.str)) {
-// 										parsingEducation = true;
-// 										parsingExperience = false;
-// 										parsingLanguages = false;
-// 										parsingSkills = false;
-// 										continue;
-// 									}
-// 									if (experienceSection.includes(item.str)) {
-// 										parsingExperience = true;
-// 										parsingSkills = false;
-// 										parsingEducation = false;
-// 										parsingLanguages = false;
-// 										continue;
-// 									}
-// 								}
-
-// 								if (parsingSkills) {
-// 									skills.push(item.str);
-// 								}
-
-// 								if (parsingLanguages) {
-// 									const languageItem = item.str.trim();
-// 									if (linkedInLanguageList.includes(languageItem)) {
-// 										languages.push(languageItem);
-// 									}
-// 									if (languageLevel.includes(languageItem)) {
-// 										const languagesLength = languages.length;
-// 										languages[languagesLength - 1] = languages[languagesLength - 1].concat(' ', languageItem);
-// 									}
-// 								}
-// 								if (parsingEducation) {
-// 									const educationItem = item.str.trim();
-// 									if (educationItem.includes('·')) {
-// 										const educationLength = education.length;
-// 										education[educationLength - 1] = education[educationLength - 1].concat(' ', educationItem);
-// 										continue;
-// 									}
-// 									education.push(educationItem);
-// 								}
-// 								if (parsingExperience) {
-// 									console.log('item', item.str);
-// 									// console.log({ companyInfo })
-// 									if (!companyInfo?.companyName) {
-// 										companyInfo.companyName = item.str;
-// 										if (isExperienceDuration(textContent.items[key + 1])) {
-// 											multiplePositions = true;
-// 										}
-// 										if (!multiplePositions) {
-// 											companyInfo.period = getPositionDurationTranslated(item.str);
-// 										}
-// 										continue;
-// 									}
-
-// 									if (multiplePositions && companyInfo.companyName && currentPosition && currentPeriod) {
-// 										const position = {
-// 											positionName: currentPosition,
-// 											period: currentPeriod
-// 										}
-// 										companyInfo.positions.push(position);
-// 									}
-
-// 									if (countryCheck) {
-// 										countryCheck = false;
-// 										continue;
-// 									}
-
-// 									if (!multiplePositions && companyInfo.companyName && currentPosition && currentPeriod) {
-// 										//here we want to push the data;
-// 										const position = {
-// 											positionName: currentPosition,
-// 											period: currentPeriod
-// 										}
-// 										companyInfo.positions.push(position);
-// 										currentPosition = null;
-// 										currentPeriod = null;
-// 										tempCurrentPeriod = null;
-// 										const companyCopy = Object.assign({}, companyInfo);
-// 										experience.push(companyCopy);
-// 										companyInfo = {};
-// 										countryCheck = true;
-// 										continue;
-// 									}
-
-// 									if (multiplePositions && companyInfo.companyName && currentPosition && currentPeriod) {
-// 										const position = {
-// 											positionName: currentPosition,
-// 											period: currentPeriod
-// 										}
-// 										companyInfo.positions.push(position);
-// 										currentPosition = null;
-// 										currentPeriod = null;
-// 										tempCurrentPeriod = null;
-// 										// if ()
-// 										const companyCopy = Object.assign({}, companyInfo);
-// 										// experience.push(companyCopy);
-// 										// companyInfo = {};
-// 										countryCheck = true;
-// 										continue;
-// 									}
-
-// 									if (companyInfo?.companyName) {
-// 										const isCompanyWorkingPeriod = !companyInfo?.period && isExperienceDuration(item.str);
-// 										const tempExperienceDuration = isCompanyWorkingPeriod && getCompanyDurationTranslated(item.str);
-// 										const isPositionPeriod = isPositionDuration(getCompanyDurationTranslated(item.str));
-// 										// console.log({ isPositionPeriod, str: item.str })
-// 										const tempPositionDuration = isPositionPeriod && getPositionDurationTranslated(item.str);
-// 										if (isCompanyWorkingPeriod) {
-// 											companyInfo.period = tempExperienceDuration;
-// 										} else if (isPositionPeriod) {
-// 											if (!companyInfo?.positions) {
-// 												companyInfo.positions = [];
-// 											}
-// 											currentPeriod = tempPositionDuration;
-// 											// const position = {
-// 											// 	positionName: currentPosition,
-// 											// 	period: tempPositionDuration
-// 											// }
-// 											// companyInfo.positions.push(position);
-// 											// currentPosition = null;
-
-
-
-
-
-// 											// if (!isPositionDuration(textContent.items[key + 3])) {
-// 											// 	experience.push(companyInfo);
-// 											// 	companyInfo = {};
-// 											// }
-
-
-
-
-// 										} else if (!isPositionDuration && findDuration(textContent.items[key + 1])) {
-// 											continue;
-// 										} else {
-// 											currentPosition = item.str;
-// 										}
-// 									}
-// 									console.log({ companyInfo })
-
-
-
-// 									// console.log({ companyInfo })
-// 									// if (!companyInfo?.companyName) {
-// 									// 	companyInfo.companyName = item.str;
-// 									// 	continue;
-// 									// }
-// 									// if (companyInfo?.companyName) {
-// 									// 	const isCompanyWorkingPeriod = !companyInfo?.period && isExperienceDuration(item.str);
-// 									// 	const tempExperienceDuration = isCompanyWorkingPeriod && getCompanyDurationTranslated(item.str);
-// 									// 	const isPositionPeriod = isPositionDuration(getCompanyDurationTranslated(item.str));
-// 									// 	console.log({isPositionPeriod, str: item.str})
-// 									// 	const tempPositionDuration = isPositionPeriod && getPositionDurationTranslated(item.str);
-// 									// 	if (isCompanyWorkingPeriod) {
-// 									// 		companyInfo.period = tempExperienceDuration;
-// 									// 	} else if (isPositionPeriod) {
-// 									// 		if (!companyInfo?.positions) {
-// 									// 			companyInfo.positions = [];
-// 									// 		}
-// 									// 		const position = {
-// 									// 			positionName: currentPosition,
-// 									// 			period: tempPositionDuration
-// 									// 		}
-// 									// 		companyInfo.positions.push(position);
-// 									// 		currentPosition = null;
-// 									// 		if (!isPositionDuration(textContent.items[key + 2])) {
-// 									// 			experience.push(companyInfo);
-// 									// 			companyInfo = {};
-// 									// 		}
-
-// 									// 	} else {											
-// 									// 		currentPosition = item.str;
-// 									// 	}
-// 									// }
-
-
-// 								}
-
-// 								continue;
-// 							}
-// 							return text;
-//
-
-
-const skills = [], education = [], languages = [], experience = [];
+const skills = [], education = [], languages = [];
+let experience = []
 const companyNameFontSize = 12;
 const timeFontSize = 10.5;
+const timeColor = "[24,24,24]";
 const positionFontSize = 11.5;
 const locationColor = "[176,176,176]";
 
+function getDefaultCompanyInfo() {
+    return {
+        companyName: null,
+        positions: [],
+        location: null
+    }
+}
+
 function isMultiplePosition(item, nextItem) {
-    return item.fontSize === companyNameFontSize && nextItem.fontSize === timeFontSize;
+    return item.fontSize === companyNameFontSize && nextItem.fontSize === timeFontSize && nextItem.color === timeColor;
 }
 
 function isCompany(item) {
     return item.fontSize === companyNameFontSize;
 }
 
-function isSinglePosition(item, nextItem) {
-    return item.fontSize === companyNameFontSize && nextItem.fontSize === timeFontSize;
-}
-
-function isStartPositionPeriod(item, nextItem) {
-    return item.fontSize === timeFontSize && nextItem.fontSize === timeFontSize;
-}
-
-function isEndPositionPeriod(item, prevItem) {
-    return item.fontSize === timeFontSize && prev.fontSize === timeFontSize;
-}
-
 function isTime(item) {
-    return item.fontSize === timeFontSize;
+    return item.fontSize === timeFontSize && item.color === timeColor;
 }
 
 function isPosition(item) {
@@ -440,6 +182,10 @@ function isLocation(item) {
     return item.color === locationColor;
 }
 
+function isCvSection(input) {
+    return experienceSection.includes(input) || languagesSection.includes(input) || educationSection.includes(input) || skillsSection.includes(input)
+}
+
 function parseLinkedinPDF(textContent) {
     let text = '';
     let parsingSkills = false;
@@ -447,22 +193,18 @@ function parseLinkedinPDF(textContent) {
     let parsingEducation = false;
     let parsingExperience = false;
     let pageFound = 0;
-    let companyInfo = experienceBlockDraft;
+    let companyInfo = getDefaultCompanyInfo();
     let currentPosition = null;
     let currentPeriod = null;
     let currentDuration = null;
-    // let tempCurrentPeriod = null;
     let multiplePositions = false;
     let countryCheck = false;
-
-
-    //TODO: remove elements of pages
-
 
     for (let [key, item] of textContent.entries()) {
         if (item.text.includes('Page ')) {
             pageFound++;
         }
+
         if (pageFound) {
             pageFound++;
             if (pageFound >= 5) {
@@ -474,9 +216,8 @@ function parseLinkedinPDF(textContent) {
         if (item.text.trim().length === 0 || item.text === '\n') {
             continue;
         }
-        // console.log({ item: item.text })
 
-        if (experienceSection.includes(item.text) || languagesSection.includes(item.text) || educationSection.includes(item.text) || skillsSection.includes(item.text)) {
+        if (isCvSection(item.text)) {
             if (languagesSection.includes(item.text)) {
                 parsingLanguages = true;
                 parsingEducation = false;
@@ -543,20 +284,23 @@ function parseLinkedinPDF(textContent) {
                 currentPosition = item.text;
             }
 
+            if (isCompany(textContent[key - 1]) && multiplePositions && isTime(item)) {
+                console.log("hey")
+                companyInfo.total = getCompanyDurationTranslated(item.text)
+                continue;
+            }
+
             if (isTime(item) && !isLocation(item)) {
                 const isNextTimeToo = isTime(textContent[key + 1]);
-                const isPrevTimeToo = isTime(textContent[key - 1]);
-                const isPrevPosition = isPosition(textContent[key - 1]);
+
                 if (isNextTimeToo) {
-                    currentPeriod = item.text;
+                    currentPeriod = getCompanyDurationTranslated(item.text);
                 }
-                if (currentPeriod === textContent[key - 1].text) {
-                    currentDuration = item.text;
+
+                if (currentPeriod === getCompanyDurationTranslated(textContent[key - 1].text)) {
+                    console.log({duration: item.text})
+                    currentDuration = getPositionDurationTranslated(item.text);
                 }
-                console.log('===')
-                console.log({text: item.text, isNextTimeToo, isPrevPosition, isPrevTimeToo})
-                console.log({currentDuration, currentPeriod});
-                console.log('===')
             }
 
             if (isExperienceFull(companyInfo, currentDuration, currentPeriod, currentPosition) && !countryCheck) {
@@ -571,7 +315,7 @@ function parseLinkedinPDF(textContent) {
                     companyInfo.positions.push(position);
                     if (isCompany(textContent[key + 1])) {
                         experience.push(companyInfo);
-                        companyInfo = experienceBlockDraft;
+                        companyInfo = getDefaultCompanyInfo();
                         multiplePositions = false;
                     }
                     currentDuration = null;
@@ -589,29 +333,31 @@ function parseLinkedinPDF(textContent) {
                         period: currentPeriod
                     }
                     companyInfo.positions.push(position);
-                    companyInfo.location = item;
+                    companyInfo.location = item.text;
                     experience.push(companyInfo);
                     currentDuration = null;
                     currentPeriod = null;
                     currentPosition = null;
                     countryCheck = false;
                     multiplePositions = false;
-                    companyInfo = experienceBlockDraft;
+                    companyInfo = getDefaultCompanyInfo();
                 }
             }
-
-            // console.log({companyPositions: companyInfo.positions})
-
-            // if (isExperienceFull(companyInfo)) {
-
-            // }
         }
 
         continue;
     }
+    experience.forEach((e) => console.log({location: e.location, positions: e.positions}))
+
+    experience = experience.map((e) => {
+        if (!e.total) {
+            e.total = e.positions[0].duration
+        }
+        return e;
+    })
+
 
     console.log({ skills, languages, education, experience })
-    experience.forEach((e) => console.log({positions: e.positions}))
 
     return text;
 }
