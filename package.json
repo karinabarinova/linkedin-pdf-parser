@@ -11,6 +11,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "pdf-parser": "^1.0.5"
+    "pdf-parser": "^1.0.5",
+    "uuid": "^9.0.0"
   }
 }

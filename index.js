@@ -1,6 +1,8 @@
 var pdfParser = require('pdf-parser');
 const util = require('util')
 const pathToFile = './pdf.pdf'
+const fs = require('fs').promises;
+const { v4: uuidv4 } = require('uuid');
 
 const skillsSection = ['Основные навыки', 'Skills', 'Навички'];
 const experienceSection = ['Experience', 'Досвід', 'Опыт работы'];
@@ -129,11 +131,6 @@ function getCompanyDurationTranslated(input) {
 }
 
 function getPositionDurationTranslated(input) {
-    console.log({hello: input.substring(
-        input.indexOf("(") + 1,
-        input.lastIndexOf(")")
-    )})
-
     const duration = input.substring(
         input.indexOf("(") + 1,
         input.lastIndexOf(")")
@@ -142,8 +139,6 @@ function getPositionDurationTranslated(input) {
     return array.map((el) => timePeriodTranslations[el] || el).join(' ');
 }
 
-const skills = [], education = [], languages = [];
-let experience = []
 const companyNameFontSize = 12;
 const timeFontSize = 10.5;
 const timeColor = "[24,24,24]";
@@ -187,7 +182,8 @@ function isCvSection(input) {
 }
 
 function parseLinkedinPDF(textContent) {
-    let text = '';
+    const skills = [], education = [], languages = [];
+    let experience = [];
     let parsingSkills = false;
     let parsingLanguages = false;
     let parsingEducation = false;
@@ -285,7 +281,6 @@ function parseLinkedinPDF(textContent) {
             }
 
             if (isCompany(textContent[key - 1]) && multiplePositions && isTime(item)) {
-                console.log("hey")
                 companyInfo.total = getCompanyDurationTranslated(item.text)
                 continue;
             }
@@ -298,7 +293,6 @@ function parseLinkedinPDF(textContent) {
                 }
 
                 if (currentPeriod === getCompanyDurationTranslated(textContent[key - 1].text)) {
-                    console.log({duration: item.text})
                     currentDuration = getPositionDurationTranslated(item.text);
                 }
             }
@@ -347,7 +341,6 @@ function parseLinkedinPDF(textContent) {
 
         continue;
     }
-    experience.forEach((e) => console.log({location: e.location, positions: e.positions}))
 
     experience = experience.map((e) => {
         if (!e.total) {
@@ -356,10 +349,9 @@ function parseLinkedinPDF(textContent) {
         return e;
     })
 
-
-    console.log({ skills, languages, education, experience })
-
-    return text;
+    return {
+        skills, languages, education, experience
+    };
 }
 
 function compare(a, b) {
@@ -387,4 +379,29 @@ async function retrievePDFdata(path) {
     return parseLinkedinPDF(pdfTextBlocks);
 }
 
-retrievePDFdata(pathToFile)
+async function createFileFromBuffer(buffer) {
+    const fileName = uuidv4() + '.pdf';
+    await fs.writeFile(fileName, buffer); 
+    return fileName;
+}
+
+async function deleteFile(path) {
+    await fs.unlink(path);
+}
+
+async function main() {
+    const buffer = await fs.readFile(pathToFile);
+    const fileName = await createFileFromBuffer(buffer); 
+    const info = await retrievePDFdata(fileName);
+    await deleteFile(fileName);
+    return info;
+}
+
+(async () => {
+    try {
+        const expertInfo = await main();
+        console.log(`[INFO]: `, { expertInfo })
+    } catch (e) {
+        console.log(`[Error]: `);
+    }
+})();
