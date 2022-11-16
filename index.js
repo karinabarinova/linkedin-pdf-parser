@@ -141,8 +141,10 @@ function getPositionDurationTranslated(input) {
 
 const companyNameFontSize = 12;
 const timeFontSize = 10.5;
+const companyHeight = 12;
 const timeColor = "[24,24,24]";
 const positionFontSize = 11.5;
+const positionHeight = 11.5;
 const locationColor = "[176,176,176]";
 
 function getDefaultCompanyInfo() {
@@ -158,7 +160,7 @@ function isMultiplePosition(item, nextItem) {
 }
 
 function isCompany(item) {
-    return item.fontSize === companyNameFontSize;
+    return item.fontSize === companyNameFontSize && item.height === companyHeight;
 }
 
 function isTime(item) {
@@ -166,7 +168,7 @@ function isTime(item) {
 }
 
 function isPosition(item) {
-    return item.fontSize === positionFontSize;
+    return item.fontSize === positionFontSize && item.height === positionHeight;
 }
 
 function isExperienceFull(experience, currentDuration, currentPeriod, currentPosition) {
@@ -269,65 +271,77 @@ function parseLinkedinPDF(textContent) {
         }
 
         if (parsingExperience) {
-            if (!companyInfo.companyName) {
-                const nextItem = textContent[key + 1];
-                multiplePositions = isMultiplePosition(item, nextItem);
-                companyInfo.companyName = item.text;
-                continue;
-            }
-
-            if (isPosition(item)) {
-                currentPosition = item.text;
-            }
-
-            if (isCompany(textContent[key - 1]) && multiplePositions && isTime(item)) {
-                companyInfo.total = getCompanyDurationTranslated(item.text)
-                continue;
-            }
-
-            if (isTime(item) && !isLocation(item)) {
-                const isNextTimeToo = isTime(textContent[key + 1]);
-
-                if (isNextTimeToo) {
-                    currentPeriod = getCompanyDurationTranslated(item.text);
+            if (!isExperienceFull(companyInfo, currentDuration, currentPeriod, currentPosition)) {
+                if (!companyInfo.companyName && isCompany(item)) {
+                    const nextItem = textContent[key + 1];
+                    multiplePositions = isMultiplePosition(item, nextItem);
+                    companyInfo.companyName = item.text;
+                    continue;
                 }
-
-                if (currentPeriod === getCompanyDurationTranslated(textContent[key - 1].text)) {
-                    currentDuration = getPositionDurationTranslated(item.text);
+    
+                if (isPosition(item)) {
+                    currentPosition = item.text;
+                }
+    
+                if (isCompany(textContent[key - 1]) && multiplePositions && isTime(item)) {
+                    companyInfo.total = getCompanyDurationTranslated(item.text)
+                    continue;
+                }
+    
+                if (isTime(item) && !isLocation(item)) {
+                    const isNextTimeToo = isTime(textContent[key + 1]);
+    
+                    if (isNextTimeToo) {
+                        currentPeriod = getCompanyDurationTranslated(item.text);
+                    }
+    
+                    if (currentPeriod === getCompanyDurationTranslated(textContent[key - 1].text)) {
+                        currentDuration = getPositionDurationTranslated(item.text);
+                    }
                 }
             }
 
             if (isExperienceFull(companyInfo, currentDuration, currentPeriod, currentPosition) && !countryCheck) {
                 if (isLocation(textContent[key + 1])) {
                     countryCheck = true;
+                    continue;
                 } else {
                     const position = {
                         positionName: currentPosition,
                         duration: currentDuration,
                         period: currentPeriod
                     }
-                    companyInfo.positions.push(position);
                     if (isCompany(textContent[key + 1])) {
+                        companyInfo.positions.push(position);
                         experience.push(companyInfo);
                         companyInfo = getDefaultCompanyInfo();
                         multiplePositions = false;
+                        currentDuration = null;
+                        currentPeriod = null;
+                        currentPosition = null;
                     }
-                    currentDuration = null;
-                    currentPeriod = null;
-                    currentPosition = null;
+                    if (isPosition(textContent[key + 1])) {
+                        companyInfo.positions.push(position);
+                        currentDuration = null;
+                        currentPeriod = null;
+                        currentPosition = null;
+                    }
                     countryCheck = false;
                 }
             }
 
             if (isExperienceFull(companyInfo, currentDuration, currentPeriod, currentPosition) && countryCheck) {
                 if (isLocation(item)) {
+                    companyInfo.location = item.text;
+                    countryCheck = false;
+                }
+                if (isCompany(textContent[key + 1])) {
                     const position = {
                         positionName: currentPosition,
                         duration: currentDuration,
                         period: currentPeriod
                     }
                     companyInfo.positions.push(position);
-                    companyInfo.location = item.text;
                     experience.push(companyInfo);
                     currentDuration = null;
                     currentPeriod = null;
