@@ -6,7 +6,7 @@ export const logger = createLogger({
         format.colorize(),
         format.timestamp(),
         format.printf(({timestamp, level, message}) => {
-            return `[${timestamp}] ${level}: ${message}`;
+            return `[${timestamp}] ${level}: ${JSON.stringify(message)}`;
         })
     )
 })

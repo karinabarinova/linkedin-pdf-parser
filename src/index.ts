@@ -22,10 +22,13 @@ import {
 } from './utils'
 import {logger} from './logger'
 
+/* tslint:disable */
 const pdfParser = require('pdf-parser')
 const util = require('util')
 const pathToFile = 'src/pdf.pdf'
 const fs = require('fs').promises
+/* tslint:enable */
+
 
 function parseLinkedinPDF(textContent: ITextProperties[]) {
     const skills: string[] = []
@@ -202,7 +205,7 @@ function parseLinkedinPDF(textContent: ITextProperties[]) {
         continue
     }
 
-    experience = experience.map((e) => {
+    experience.forEach((e) => {
         if (!e.total) {
             e.total = e.positions[0].duration
         }

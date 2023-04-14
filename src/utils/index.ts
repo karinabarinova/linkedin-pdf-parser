@@ -1,8 +1,11 @@
-import { ICompanyPositionStructure, IPage, ITextProperties } from '../types/interfaces'
-import { RGB } from '../types/types'
+/* eslint @typescript-eslint/no-var-requires: "off" */
+import {ICompanyPositionStructure, IPage, ITextProperties} from '../types/interfaces'
+import {RGB} from '../types/types'
 
+/* tslint:disable */
 const fs = require('fs').promises
-const { v4: uuidv4 } = require('uuid')
+const {v4: uuidv4} = require('uuid')
+/* tslint:enable */
 
 export const skillsSection: string[] = ['Основные навыки', 'Skills', 'Навички']
 export const experienceSection: string[] = ['Experience', 'Досвід', 'Опыт работы']
@@ -95,7 +98,7 @@ export const languageLevel: string[] = [
     '(Limited Working)',
 ]
 
-export const timePeriodTranslations: { [key: string]: string } = {
+export const timePeriodTranslations: {[key: string]: string} = {
     год: 'year',
     года: 'years',
     рік: 'year',
