@@ -20,6 +20,7 @@ import {
     linkedInLanguageList,
     skillsSection,
 } from './utils'
+import {logger} from './logger'
 
 const pdfParser = require('pdf-parser')
 const util = require('util')
@@ -236,11 +237,11 @@ async function main() {
     return info
 }
 
-(async () => {
+; (async () => {
     try {
-        const expertInfo = await main();
-        console.log(`[INFO]: `, {expertInfo})
+        const expertInfo = await main()
+        logger.info(expertInfo)
     } catch (e) {
-        console.log(`[Error]: ${e}`);
+        logger.error(e)
     }
-})();
+})()
