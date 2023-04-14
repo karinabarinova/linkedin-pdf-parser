@@ -1,190 +1,13 @@
+import {IPage, IPosition, ITextProperties} from "./types/interfaces";
+import {comparePages, createFileFromBuffer, deleteFile, educationSection, experienceSection, getCompanyDurationTranslated, getDefaultCompanyInfo, getPositionDurationTranslated, isCompany, isCvSection, isExperienceFull, isLocation, isMultiplePosition, isPosition, isTime, languageLevel, languagesSection, linkedInLanguageList, skillsSection} from "./utils";
+
 var pdfParser = require('pdf-parser');
 const util = require('util')
-const pathToFile = './pdf.pdf'
+const pathToFile = 'src/pdf.pdf'
 const fs = require('fs').promises;
-const { v4: uuidv4 } = require('uuid');
 
-const skillsSection = ['Основные навыки', 'Skills', 'Навички'];
-const experienceSection = ['Experience', 'Досвід', 'Опыт работы'];
-const educationSection = ['Education', 'Освіта', 'Образование'];
-const languagesSection = ['Languages', 'Мови', 'Языки']
-
-const linkedInLanguageList = [
-    "Arabic",
-    "Chinese",
-    "Czech",
-    "Danish",
-    "Dutch",
-    "English",
-    "Latin",
-    "French",
-    "German",
-    "Hindi",
-    "Indonesian",
-    "Italian",
-    "Japanese",
-    "Korean",
-    "Norwegian",
-    "Polish",
-    "Portuguese",
-    "Malay",
-    "Russian",
-    "Romanian",
-    "Spanish",
-    "Swedish",
-    "Thai",
-    "Turkish",
-    "Ukrainian",
-    "Арабська",
-    "Китайська",
-    "Чеська",
-    "Датська",
-    "Голландська",
-    "Англійська",
-    "Латинська",
-    "Французька",
-    "Німецька",
-    "Хінді",
-    "Індонезійська",
-    "Італійська",
-    "Японська",
-    "Корейська",
-    "Норвезька",
-    "Польська",
-    "Португальська",
-    "Малайська",
-    "Російська",
-    "Румунська",
-    "Іспанська",
-    "Шведська",
-    "Тайська",
-    "Турецька",
-    "Українська",
-    "Арабский",
-    "Китайский",
-    "Чешский",
-    "Датский",
-    "Голландский",
-    "Английский",
-    "Латинский",
-    "Французский",
-    "Немецкий",
-    "Хинди",
-    "Индонезийский",
-    "Итальянский",
-    "Японский",
-    "Корейский",
-    "Норвежский",
-    "Польский",
-    "Португальский",
-    "Малайский",
-    "Русский",
-    "Румынский",
-    "Испанский",
-    "Шведский",
-    "Тайский",
-    "Турецкий",
-    "Украинский",
-];
-
-const languageLevel = ['(Native or Bilingual)', '(Full Professional)', '(Professional Working)', '(Elementary)', '(Limited Working)']
-
-const timePeriodTranslations = {
-    "год": "year",
-    "года": "years",
-    "рік": "year",
-    "роки": "years",
-    "месяц": "month",
-    "месяца": "month",
-    "месяцев": "months",
-    "місяць": "month",
-    "місяців": "months",
-    "января": "january",
-    "февраля": "february",
-    "марта": "march",
-    "апреля": "april",
-    "мая": "may",
-    "июня": "june",
-    "июля": "july",
-    "августа": "august",
-    "сентября": "september",
-    "октября": "october",
-    "ноября": "november",
-    "декабря": "december",
-    "січня": "january",
-    "лютого": "february",
-    "березня": "march",
-    "квітня": "april",
-    "травня": "may",
-    "червня": "june",
-    "липня": "july",
-    "серпня": "august",
-    "вересня": "september",
-    "жовтня": "october",
-    "листопада": "november",
-    "грудня": "december",
-}
-
-function getCompanyDurationTranslated(input) {
-    const array = input.split(/(\s+)/);
-    return array.map((el) => timePeriodTranslations[el] || el).join('');
-}
-
-function getPositionDurationTranslated(input) {
-    const duration = input.substring(
-        input.indexOf("(") + 1,
-        input.lastIndexOf(")")
-    );
-    const array = duration.split(" ");
-    return array.map((el) => timePeriodTranslations[el] || el).join(' ');
-}
-
-const companyNameFontSize = 12;
-const timeFontSize = 10.5;
-const companyHeight = 12;
-const timeColor = "[24,24,24]";
-const positionFontSize = 11.5;
-const positionHeight = 11.5;
-const locationColor = "[176,176,176]";
-
-function getDefaultCompanyInfo() {
-    return {
-        companyName: null,
-        positions: [],
-        location: null
-    }
-}
-
-function isMultiplePosition(item, nextItem) {
-    return item.fontSize === companyNameFontSize && nextItem.fontSize === timeFontSize && nextItem.color === timeColor;
-}
-
-function isCompany(item) {
-    return item.fontSize === companyNameFontSize && item.height === companyHeight;
-}
-
-function isTime(item) {
-    return item.fontSize === timeFontSize && item.color === timeColor;
-}
-
-function isPosition(item) {
-    return item.fontSize === positionFontSize && item.height === positionHeight;
-}
-
-function isExperienceFull(experience, currentDuration, currentPeriod, currentPosition) {
-    return !!experience.companyName && !!currentDuration && !!currentPeriod && !!currentPosition;
-}
-
-function isLocation(item) {
-    return item.color === locationColor;
-}
-
-function isCvSection(input) {
-    return experienceSection.includes(input) || languagesSection.includes(input) || educationSection.includes(input) || skillsSection.includes(input)
-}
-
-function parseLinkedinPDF(textContent) {
-    const skills = [], education = [], languages = [];
+function parseLinkedinPDF(textContent: ITextProperties[]) {
+    const skills: string[] = [], education: string[] = [], languages: string[] = [];
     let experience = [];
     let parsingSkills = false;
     let parsingLanguages = false;
@@ -256,14 +79,15 @@ function parseLinkedinPDF(textContent) {
                 languages.push(languageItem);
             }
             if (languageLevel.includes(languageItem)) {
-                const languagesLength = languages.length;
+                const languagesLength: number = languages.length;
                 languages[languagesLength - 1] = languages[languagesLength - 1].concat(' ', languageItem);
             }
         }
         if (parsingEducation) {
             const educationItem = item.text.trim();
+            console.log(educationItem)
             if (educationItem.includes('·')) {
-                const educationLength = education.length;
+                const educationLength: number = education.length;
                 education[educationLength - 1] = education[educationLength - 1].concat(' ', educationItem);
                 continue;
             }
@@ -278,23 +102,23 @@ function parseLinkedinPDF(textContent) {
                     companyInfo.companyName = item.text;
                     continue;
                 }
-    
+
                 if (isPosition(item)) {
                     currentPosition = item.text;
                 }
-    
+
                 if (isCompany(textContent[key - 1]) && multiplePositions && isTime(item)) {
                     companyInfo.total = getCompanyDurationTranslated(item.text)
                     continue;
                 }
-    
+
                 if (isTime(item) && !isLocation(item)) {
                     const isNextTimeToo = isTime(textContent[key + 1]);
-    
+
                     if (isNextTimeToo) {
                         currentPeriod = getCompanyDurationTranslated(item.text);
                     }
-    
+
                     if (currentPeriod === getCompanyDurationTranslated(textContent[key - 1].text)) {
                         currentDuration = getPositionDurationTranslated(item.text);
                     }
@@ -306,7 +130,7 @@ function parseLinkedinPDF(textContent) {
                     countryCheck = true;
                     continue;
                 } else {
-                    const position = {
+                    const position: IPosition = {
                         positionName: currentPosition,
                         duration: currentDuration,
                         period: currentPeriod
@@ -363,49 +187,30 @@ function parseLinkedinPDF(textContent) {
         return e;
     })
 
+    console.log(skills, languages)
+
     return {
         skills, languages, education, experience
     };
 }
 
-function compare(a, b) {
-    const pageA = a.pageId;
-    const pageB = b.pageId;
-  
-    let comparison = 0;
-    if (pageA > pageB) {
-      comparison = 1;
-    } else if (pageA < pageB) {
-      comparison = -1;
-    }
-    return comparison;
-  }
-
-async function retrievePDFdata(path) {
+async function retrievePDFdata(path: string) {
     const parserPromise = util.promisify(pdfParser.pdf2json);
-    const { pages } = await parserPromise(path);
+    const {pages}: {pages: IPage[]} = await parserPromise(path);
     if (!pages) {
-        throw new Error('Failed to parse Linkedin PDF file. Error: ', error);
+        throw new Error('Failed to parse Linkedin PDF file.');
     }
-    const sortedPages = pages.sort(compare)
-    const pdfTextBlocks = [];
-    sortedPages.forEach((page) => pdfTextBlocks.push(...page.texts))
+    console.log(pages)
+    const sortedPages = pages.sort(comparePages)
+    const pdfTextBlocks: ITextProperties[] = [];
+    sortedPages.forEach((page: IPage) => pdfTextBlocks.push(...page.texts)
+    )
     return parseLinkedinPDF(pdfTextBlocks);
-}
-
-async function createFileFromBuffer(buffer) {
-    const fileName = uuidv4() + '.pdf';
-    await fs.writeFile(fileName, buffer); 
-    return fileName;
-}
-
-async function deleteFile(path) {
-    await fs.unlink(path);
 }
 
 async function main() {
     const buffer = await fs.readFile(pathToFile);
-    const fileName = await createFileFromBuffer(buffer); 
+    const fileName = await createFileFromBuffer(buffer);
     const info = await retrievePDFdata(fileName);
     await deleteFile(fileName);
     return info;
@@ -414,8 +219,8 @@ async function main() {
 (async () => {
     try {
         const expertInfo = await main();
-        console.log(`[INFO]: `, { expertInfo })
+        console.log(`[INFO]: `, {expertInfo})
     } catch (e) {
-        console.log(`[Error]: `);
+        console.log(`[Error]: ${e}`);
     }
 })();
