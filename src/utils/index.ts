@@ -1,5 +1,5 @@
 import {logger} from '../logger';
-import {ICompanyPositionStructure, IPage, ITextProperties} from '../types/interfaces'
+import {IExperience, IPage, ITextProperties} from '../types/interfaces'
 import {RGB} from '../types/types'
 
 import {promises as fs} from 'fs';
@@ -132,6 +132,10 @@ export const timePeriodTranslations: {[key: string]: string} = {
     грудня: 'december',
 }
 
+export function isPageSeparator(text: string): boolean {
+    return text.includes('Page ');
+}
+
 export function translateTimePeriods(input: string): string {
     const array = input.split(/(\s+)/)
     return array.map((el) => timePeriodTranslations[el] || el).join('')
@@ -151,7 +155,7 @@ const POSITION_FONT_SIZE = 11.5
 const POSITION_HEIGHT = 11.5
 const LOCATION_COLOR: RGB = '[176,176,176]' as RGB
 
-export function getDefaultCompanyInfo(): ICompanyPositionStructure {
+export function getDefaultCompanyInfo(): IExperience {
     return {
         companyName: '',
         positions: [],
@@ -190,7 +194,7 @@ export function isPosition(item: ITextProperties) {
  */
 
 export function isExperienceFull(
-    experience: ICompanyPositionStructure,
+    experience: IExperience,
     currentDuration: string | null,
     currentPeriod: string | null,
     currentPosition: string | null

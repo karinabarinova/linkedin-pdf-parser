@@ -1,11 +1,18 @@
-import { RGB } from './types'
+import {RGB} from './types'
 
-export interface ICompanyPositionStructure {
+export interface IExperience {
     companyName: string
     location: string
     positions: IPosition[]
     total: string | null
 }
+
+export interface IParsedData {
+    skills: string[];
+    education: string[];
+    languages: string[];
+    experience: IExperience[];
+};
 
 export interface IPosition {
     positionName: string | null

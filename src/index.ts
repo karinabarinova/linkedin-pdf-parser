@@ -1,4 +1,4 @@
-import {IPage, IPosition, ITextProperties} from './types/interfaces'
+import {IPage, IParsedData, IPosition, ITextProperties} from './types/interfaces'
 import {
     comparePages,
     createFileFromBuffer,
@@ -19,19 +19,36 @@ import {
     LANGUAGES_SECTION,
     LINKEDIN_LANGUAGE_LIST,
     SKILLS_SECTION,
+    isPageSeparator,
 } from './utils'
 import {logger} from './logger'
 
 /* tslint:disable */
 const pdfParser = require('pdf-parser')
-const util = require('util')
 /* tslint:enable */
+import {promisify} from 'util';
 
 const pathToFile = 'src/pdf.pdf'
 import {promises as fs} from 'fs';
 
+function isParsingLanguages(item: ITextProperties) {
+    return LANGUAGES_SECTION.indexOf(item.text) !== -1;
+}
 
-function parseLinkedinPDF(textContent: ITextProperties[]) {
+function isParsingSkills(item: ITextProperties) {
+    return SKILLS_SECTION.indexOf(item.text) !== -1;
+}
+
+function isParsingEducation(item: ITextProperties) {
+    return EDUCATION_SECTION.indexOf(item.text) !== -1;
+}
+
+function isParsingExperience(item: ITextProperties) {
+    return EXPERIENCE_SECTION.indexOf(item.text) !== -1;
+}
+
+const PAGE_SEPARATOR_THRESHOLD = 5;
+function parseLinkedinPDF(textContent: ITextProperties[]): IParsedData {
     const skills: string[] = []
     const education: string[] = []
     const languages: string[] = []
@@ -59,38 +76,29 @@ function parseLinkedinPDF(textContent: ITextProperties[]) {
             languages.push(languageItem);
         }
         if (languageLevel.includes(languageItem)) {
-            const languagesLength = languages.length;
-            languages[languagesLength - 1] = languages[
-                languagesLength - 1
-            ].concat(' ', languageItem);
+            const lastLanguage = languages[languages.length - 1];
+            languages[languages.length - 1] = `${lastLanguage} ${languageItem}`;
         }
     }
 
     function parseEducation(text: string) {
         const educationItem = text.trim();
         if (educationItem.includes('·')) {
-            const educationLength = education.length;
-            education[educationLength - 1] = education[educationLength - 1].concat(
-                ' ',
-                educationItem,
-            );
+            const lastEducation = education[education.length - 1];
+            education[education.length - 1] = `${lastEducation} ${educationItem}`;
             return;
         }
         education.push(educationItem);
     }
 
-    function parseExperience(text: string, key: number) {
-
-    }
-
     for (const [key, item] of textContent.entries()) {
-        if (item.text.includes('Page ')) {
+        if (isPageSeparator(item.text)) {
             pageFound++
         }
 
         if (pageFound) {
             pageFound++
-            if (pageFound >= 5) {
+            if (pageFound >= PAGE_SEPARATOR_THRESHOLD) {
                 pageFound = 0
             }
             continue
@@ -101,28 +109,28 @@ function parseLinkedinPDF(textContent: ITextProperties[]) {
         }
 
         if (isCvSection(item.text)) {
-            if (LANGUAGES_SECTION.includes(item.text)) {
+            if (isParsingLanguages(item)) {
                 parsingLanguages = true
                 parsingEducation = false
                 parsingExperience = false
                 parsingSkills = false
                 continue
             }
-            if (SKILLS_SECTION.includes(item.text)) {
+            if (isParsingSkills(item)) {
                 parsingSkills = true
                 parsingEducation = false
                 parsingExperience = false
                 parsingLanguages = false
                 continue
             }
-            if (EDUCATION_SECTION.includes(item.text)) {
+            if (isParsingEducation(item)) {
                 parsingEducation = true
                 parsingExperience = false
                 parsingLanguages = false
                 parsingSkills = false
                 continue
             }
-            if (EXPERIENCE_SECTION.includes(item.text)) {
+            if (isParsingExperience(item)) {
                 parsingExperience = true
                 parsingSkills = false
                 parsingEducation = false
@@ -244,15 +252,20 @@ function parseLinkedinPDF(textContent: ITextProperties[]) {
 }
 
 async function retrievePDFdata(path: string) {
-    const parserPromise = util.promisify(pdfParser.pdf2json)
-    const {pages}: {pages: IPage[]} = await parserPromise(path)
-    if (!pages) {
-        throw new Error('Failed to parse Linkedin PDF file.')
+    try {
+        const parserPromise = promisify(pdfParser.pdf2json)
+        const {pages}: {pages: IPage[]} = await parserPromise(path)
+        if (!pages) {
+            throw new Error('Failed to parse Linkedin PDF file.')
+        }
+        const sortedPages = pages.sort(comparePages)
+        const pdfTextBlocks: ITextProperties[] = []
+        sortedPages.forEach((page: IPage) => pdfTextBlocks.push(...page.texts))
+        return parseLinkedinPDF(pdfTextBlocks)
+    } catch (error) {
+        logger.error(error)
+        throw new Error('Failed to retrieve LinkedIn PDF data.')
     }
-    const sortedPages = pages.sort(comparePages)
-    const pdfTextBlocks: ITextProperties[] = []
-    sortedPages.forEach((page: IPage) => pdfTextBlocks.push(...page.texts))
-    return parseLinkedinPDF(pdfTextBlocks)
 }
 
 async function main() {
