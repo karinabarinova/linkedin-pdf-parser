@@ -5,9 +5,9 @@ import {
     deleteFile,
     EDUCATION_SECTION,
     EXPERIENCE_SECTION,
-    getCompanyDurationTranslated,
+    translateTimePeriods,
     getDefaultCompanyInfo,
-    getPositionDurationTranslated,
+    translatePositionDuration,
     isCompany,
     isCvSection,
     isExperienceFull,
@@ -156,7 +156,7 @@ function parseLinkedinPDF(textContent: ITextProperties[]) {
                 }
 
                 if (isCompany(textContent[key - 1]) && multiplePositions && isTime(item)) {
-                    companyInfo.total = getCompanyDurationTranslated(item.text)
+                    companyInfo.total = translateTimePeriods(item.text)
                     continue
                 }
 
@@ -164,11 +164,11 @@ function parseLinkedinPDF(textContent: ITextProperties[]) {
                     const isNextTimeToo = isTime(textContent[key + 1])
 
                     if (isNextTimeToo) {
-                        currentPeriod = getCompanyDurationTranslated(item.text)
+                        currentPeriod = translateTimePeriods(item.text)
                     }
 
-                    if (currentPeriod === getCompanyDurationTranslated(textContent[key - 1].text)) {
-                        currentDuration = getPositionDurationTranslated(item.text)
+                    if (currentPeriod === translateTimePeriods(textContent[key - 1].text)) {
+                        currentDuration = translatePositionDuration(item.text)
                     }
                 }
             }

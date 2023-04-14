@@ -1,3 +1,4 @@
+import {logger} from '../logger';
 import {ICompanyPositionStructure, IPage, ITextProperties} from '../types/interfaces'
 import {RGB} from '../types/types'
 
@@ -131,24 +132,24 @@ export const timePeriodTranslations: {[key: string]: string} = {
     грудня: 'december',
 }
 
-export function getCompanyDurationTranslated(input: string): string {
+export function translateTimePeriods(input: string): string {
     const array = input.split(/(\s+)/)
     return array.map((el) => timePeriodTranslations[el] || el).join('')
 }
 
-export function getPositionDurationTranslated(input: string): string {
+export function translatePositionDuration(input: string): string {
     const duration = input.substring(input.indexOf('(') + 1, input.lastIndexOf(')'))
     const array = duration.split(' ')
     return array.map((el) => timePeriodTranslations[el] || el).join(' ')
 }
 
-const companyNameFontSize = 12
-const timeFontSize = 10.5
-const companyHeight = 12
-const timeColor: RGB = '[24,24,24]' as RGB
-const positionFontSize = 11.5
-const positionHeight = 11.5
-const locationColor: RGB = '[176,176,176]' as RGB
+const COMPANY_NAME_FONT_SIZE = 12
+const TIME_FONT_SIZE = 10.5
+const COMPANY_HEIGHT = 12
+const TIME_COLOR: RGB = '[24,24,24]' as RGB
+const POSITION_FONT_SIZE = 11.5
+const POSITION_HEIGHT = 11.5
+const LOCATION_COLOR: RGB = '[176,176,176]' as RGB
 
 export function getDefaultCompanyInfo(): ICompanyPositionStructure {
     return {
@@ -159,21 +160,34 @@ export function getDefaultCompanyInfo(): ICompanyPositionStructure {
     }
 }
 
-export function isMultiplePosition(item: ITextProperties, nextItem: ITextProperties) {
-    return item.fontSize === companyNameFontSize && nextItem.fontSize === timeFontSize && nextItem.color === timeColor
+export function isMultiplePosition(currentText: ITextProperties, nextText: ITextProperties) {
+    const {fontSize: currentFontSize} = currentText;
+    const {fontSize: nextFontSize, color: nextColor} = nextText;
+
+    return currentFontSize === COMPANY_NAME_FONT_SIZE &&
+        nextFontSize === TIME_FONT_SIZE &&
+        nextColor === TIME_COLOR;
 }
 
 export function isCompany(item: ITextProperties) {
-    return item.fontSize === companyNameFontSize && item.height === companyHeight
+    const {fontSize, height} = item;
+    return fontSize === COMPANY_NAME_FONT_SIZE && height === COMPANY_HEIGHT
 }
 
 export function isTime(item: ITextProperties) {
-    return item.fontSize === timeFontSize && item.color === timeColor
+    return item.fontSize === TIME_FONT_SIZE && item.color === TIME_COLOR
 }
 
 export function isPosition(item: ITextProperties) {
-    return item.fontSize === positionFontSize && item.height === positionHeight
+    const {fontSize, height} = item;
+    return fontSize === POSITION_FONT_SIZE && height === POSITION_HEIGHT
 }
+
+/**
+ * Checks if a work experience object is complete.
+ * A work experience object is considered complete if it has a company name,
+ * a current duration, a current period, a current position, and at least one position.
+ */
 
 export function isExperienceFull(
     experience: ICompanyPositionStructure,
@@ -185,7 +199,7 @@ export function isExperienceFull(
 }
 
 export function isLocation(item: ITextProperties) {
-    return item.color === locationColor
+    return item.color === LOCATION_COLOR
 }
 
 export function isCvSection(input: string) {
@@ -201,21 +215,25 @@ export function comparePages(a: IPage, b: IPage) {
     const pageA = a.pageId
     const pageB = b.pageId
 
-    let comparison = 0
-    if (pageA > pageB) {
-        comparison = 1
-    } else if (pageA < pageB) {
-        comparison = -1
-    }
-    return comparison
+    return pageA > pageB ? 1 : pageA < pageB ? -1 : 0
 }
 
-export async function createFileFromBuffer(buffer: Buffer) {
-    const fileName = uuidv4() + '.pdf'
-    await fs.writeFile(fileName, buffer)
-    return fileName
+export async function createFileFromBuffer(buffer: Buffer): Promise<string> {
+    try {
+        const fileName = uuidv4() + '.pdf';
+        await fs.writeFile(fileName, buffer);
+        return fileName;
+    } catch (error) {
+        logger.error('Error creating file from buffer:', error);
+        throw error;
+    }
 }
 
 export async function deleteFile(path: string) {
-    await fs.unlink(path)
+    try {
+        await fs.unlink(path);
+        logger.info(`File ${path} has been deleted.`);
+    } catch (err) {
+        logger.error(`Error deleting file ${path}:`, err);
+    }
 }
