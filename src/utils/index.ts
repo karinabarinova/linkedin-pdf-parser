@@ -2,9 +2,7 @@ import {ICompanyPositionStructure, IPage, ITextProperties} from '../types/interf
 import {RGB} from '../types/types'
 
 import {promises as fs} from 'fs';
-/* tslint:disable */
-const {v4: uuidv4} = require('uuid')
-/* tslint:enable */
+import {v4 as uuidv4} from 'uuid';
 
 export const SKILLS_SECTION: string[] = ['Основные навыки', 'Skills', 'Навички']
 export const EXPERIENCE_SECTION: string[] = ['Experience', 'Досвід', 'Опыт работы']
