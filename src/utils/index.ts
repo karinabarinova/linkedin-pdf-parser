@@ -1,18 +1,17 @@
-/* eslint @typescript-eslint/no-var-requires: "off" */
 import {ICompanyPositionStructure, IPage, ITextProperties} from '../types/interfaces'
 import {RGB} from '../types/types'
 
+import {promises as fs} from 'fs';
 /* tslint:disable */
-const fs = require('fs').promises
 const {v4: uuidv4} = require('uuid')
 /* tslint:enable */
 
-export const skillsSection: string[] = ['Основные навыки', 'Skills', 'Навички']
-export const experienceSection: string[] = ['Experience', 'Досвід', 'Опыт работы']
-export const educationSection = ['Education', 'Освіта', 'Образование']
-export const languagesSection: string[] = ['Languages', 'Мови', 'Языки']
+export const SKILLS_SECTION: string[] = ['Основные навыки', 'Skills', 'Навички']
+export const EXPERIENCE_SECTION: string[] = ['Experience', 'Досвід', 'Опыт работы']
+export const EDUCATION_SECTION = ['Education', 'Освіта', 'Образование']
+export const LANGUAGES_SECTION: string[] = ['Languages', 'Мови', 'Языки']
 
-export const linkedInLanguageList: string[] = [
+export const LINKEDIN_LANGUAGE_LIST: string[] = [
     'Arabic',
     'Chinese',
     'Czech',
@@ -193,10 +192,10 @@ export function isLocation(item: ITextProperties) {
 
 export function isCvSection(input: string) {
     return (
-        experienceSection.includes(input) ||
-        languagesSection.includes(input) ||
-        educationSection.includes(input) ||
-        skillsSection.includes(input)
+        EXPERIENCE_SECTION.includes(input) ||
+        LANGUAGES_SECTION.includes(input) ||
+        EDUCATION_SECTION.includes(input) ||
+        SKILLS_SECTION.includes(input)
     )
 }
 
@@ -213,7 +212,7 @@ export function comparePages(a: IPage, b: IPage) {
     return comparison
 }
 
-export async function createFileFromBuffer(buffer: string) {
+export async function createFileFromBuffer(buffer: Buffer) {
     const fileName = uuidv4() + '.pdf'
     await fs.writeFile(fileName, buffer)
     return fileName

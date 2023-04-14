@@ -3,8 +3,8 @@ import {
     comparePages,
     createFileFromBuffer,
     deleteFile,
-    educationSection,
-    experienceSection,
+    EDUCATION_SECTION,
+    EXPERIENCE_SECTION,
     getCompanyDurationTranslated,
     getDefaultCompanyInfo,
     getPositionDurationTranslated,
@@ -16,36 +16,72 @@ import {
     isPosition,
     isTime,
     languageLevel,
-    languagesSection,
-    linkedInLanguageList,
-    skillsSection,
+    LANGUAGES_SECTION,
+    LINKEDIN_LANGUAGE_LIST,
+    SKILLS_SECTION,
 } from './utils'
 import {logger} from './logger'
 
 /* tslint:disable */
 const pdfParser = require('pdf-parser')
 const util = require('util')
-const pathToFile = 'src/pdf.pdf'
-const fs = require('fs').promises
 /* tslint:enable */
+
+const pathToFile = 'src/pdf.pdf'
+import {promises as fs} from 'fs';
 
 
 function parseLinkedinPDF(textContent: ITextProperties[]) {
     const skills: string[] = []
     const education: string[] = []
     const languages: string[] = []
-    let experience = []
+    const experience = []
+
     let parsingSkills = false
     let parsingLanguages = false
     let parsingEducation = false
     let parsingExperience = false
     let pageFound = 0
     let companyInfo = getDefaultCompanyInfo()
-    let currentPosition = null
-    let currentPeriod = null
-    let currentDuration = null
+    let currentPosition: string | null = null
+    let currentPeriod: string | null = null
+    let currentDuration: string | null = null
     let multiplePositions = false
     let countryCheck = false
+
+    function parseSkills(text: string) {
+        skills.push(text);
+    }
+
+    function parseLanguages(text: string) {
+        const languageItem = text.trim();
+        if (LINKEDIN_LANGUAGE_LIST.includes(languageItem)) {
+            languages.push(languageItem);
+        }
+        if (languageLevel.includes(languageItem)) {
+            const languagesLength = languages.length;
+            languages[languagesLength - 1] = languages[
+                languagesLength - 1
+            ].concat(' ', languageItem);
+        }
+    }
+
+    function parseEducation(text: string) {
+        const educationItem = text.trim();
+        if (educationItem.includes('·')) {
+            const educationLength = education.length;
+            education[educationLength - 1] = education[educationLength - 1].concat(
+                ' ',
+                educationItem,
+            );
+            return;
+        }
+        education.push(educationItem);
+    }
+
+    function parseExperience(text: string, key: number) {
+
+    }
 
     for (const [key, item] of textContent.entries()) {
         if (item.text.includes('Page ')) {
@@ -65,28 +101,28 @@ function parseLinkedinPDF(textContent: ITextProperties[]) {
         }
 
         if (isCvSection(item.text)) {
-            if (languagesSection.includes(item.text)) {
+            if (LANGUAGES_SECTION.includes(item.text)) {
                 parsingLanguages = true
                 parsingEducation = false
                 parsingExperience = false
                 parsingSkills = false
                 continue
             }
-            if (skillsSection.includes(item.text)) {
+            if (SKILLS_SECTION.includes(item.text)) {
                 parsingSkills = true
                 parsingEducation = false
                 parsingExperience = false
                 parsingLanguages = false
                 continue
             }
-            if (educationSection.includes(item.text)) {
+            if (EDUCATION_SECTION.includes(item.text)) {
                 parsingEducation = true
                 parsingExperience = false
                 parsingLanguages = false
                 parsingSkills = false
                 continue
             }
-            if (experienceSection.includes(item.text)) {
+            if (EXPERIENCE_SECTION.includes(item.text)) {
                 parsingExperience = true
                 parsingSkills = false
                 parsingEducation = false
@@ -96,27 +132,14 @@ function parseLinkedinPDF(textContent: ITextProperties[]) {
         }
 
         if (parsingSkills) {
-            skills.push(item.text)
+            parseSkills(item.text)
         }
 
         if (parsingLanguages) {
-            const languageItem = item.text.trim()
-            if (linkedInLanguageList.includes(languageItem)) {
-                languages.push(languageItem)
-            }
-            if (languageLevel.includes(languageItem)) {
-                const languagesLength: number = languages.length
-                languages[languagesLength - 1] = languages[languagesLength - 1].concat(' ', languageItem)
-            }
+            parseLanguages(item.text)
         }
         if (parsingEducation) {
-            const educationItem = item.text.trim()
-            if (educationItem.includes('·')) {
-                const educationLength: number = education.length
-                education[educationLength - 1] = education[educationLength - 1].concat(' ', educationItem)
-                continue
-            }
-            education.push(educationItem)
+            parseEducation(item.text)
         }
 
         if (parsingExperience) {
