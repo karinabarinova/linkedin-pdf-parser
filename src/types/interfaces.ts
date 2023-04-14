@@ -43,3 +43,4 @@ export interface ITextProperties {
     black: boolean
     color: RGB
 }
+

@@ -88,7 +88,7 @@ export const LINKEDIN_LANGUAGE_LIST: string[] = [
     'Украинский',
 ]
 
-export const languageLevel: string[] = [
+export const LANGUAGE_LEVEL: string[] = [
     '(Native or Bilingual)',
     '(Full Professional)',
     '(Professional Working)',
@@ -96,13 +96,13 @@ export const languageLevel: string[] = [
     '(Limited Working)',
 ]
 
-export const timePeriodTranslations: {[key: string]: string} = {
+export const TIME_PERIOD_TRANSLATIONS: {[key: string]: string} = {
     год: 'year',
     года: 'years',
     рік: 'year',
     роки: 'years',
     месяц: 'month',
-    месяца: 'month',
+    месяца: 'months',
     месяцев: 'months',
     місяць: 'month',
     місяців: 'months',
@@ -138,13 +138,13 @@ export function isPageSeparator(text: string): boolean {
 
 export function translateTimePeriods(input: string): string {
     const array = input.split(/(\s+)/)
-    return array.map((el) => timePeriodTranslations[el] || el).join('')
+    return array.map((el) => TIME_PERIOD_TRANSLATIONS[el] || el).join('')
 }
 
 export function translatePositionDuration(input: string): string {
     const duration = input.substring(input.indexOf('(') + 1, input.lastIndexOf(')'))
     const array = duration.split(' ')
-    return array.map((el) => timePeriodTranslations[el] || el).join(' ')
+    return array.map((el) => TIME_PERIOD_TRANSLATIONS[el] || el).join(' ')
 }
 
 const COMPANY_NAME_FONT_SIZE = 12

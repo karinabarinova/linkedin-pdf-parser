@@ -15,7 +15,7 @@ import {
     isMultiplePosition,
     isPosition,
     isTime,
-    languageLevel,
+    LANGUAGE_LEVEL,
     LANGUAGES_SECTION,
     LINKEDIN_LANGUAGE_LIST,
     SKILLS_SECTION,
@@ -75,7 +75,7 @@ function parseLinkedinPDF(textContent: ITextProperties[]): IParsedData {
         if (LINKEDIN_LANGUAGE_LIST.includes(languageItem)) {
             languages.push(languageItem);
         }
-        if (languageLevel.includes(languageItem)) {
+        if (LANGUAGE_LEVEL.includes(languageItem)) {
             const lastLanguage = languages[languages.length - 1];
             languages[languages.length - 1] = `${lastLanguage} ${languageItem}`;
         }
